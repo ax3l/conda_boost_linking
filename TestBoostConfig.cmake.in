@@ -1,0 +1,16 @@
+# only add PUBLIC dependencies as well
+#   https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html#creating-a-package-configuration-file
+include(CMakeFindDependencyMacro)
+
+find_dependency(Boost)
+
+include("${CMAKE_CURRENT_LIST_DIR}/TestBoostTargets.cmake")
+
+# check if components are fulfilled and set TestBoost_<COMPONENT>_FOUND vars
+foreach(comp ${TestBoost_FIND_COMPONENTS})
+    if(NOT TestBoost_${comp}_FOUND)
+        if(TestBoost_FIND_REQUIRED_${comp})
+            set(TestBoost_FOUND FALSE)
+        endif()
+    endif()
+endforeach()

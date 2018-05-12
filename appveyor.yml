@@ -1,0 +1,130 @@
+environment:
+  matrix:
+#    - TARGET_ARCH: x86
+#      CONDA_PY: 27
+#      CONDA_INSTALL_LOCN: C:\\Miniconda
+
+    - TARGET_ARCH: x64
+      CONDA_PY: 27
+      CONDA_INSTALL_LOCN: C:\\Miniconda-x64
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+
+#    - TARGET_ARCH: x86
+#      CONDA_PY: 35
+#      CONDA_INSTALL_LOCN: C:\\Miniconda35
+#      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+
+    - TARGET_ARCH: x64
+      CONDA_PY: 35
+      CONDA_INSTALL_LOCN: C:\\Miniconda35-x64
+
+#    - TARGET_ARCH: x86
+#      CONDA_PY: 36
+#      CONDA_INSTALL_LOCN: C:\\Miniconda36
+
+    - TARGET_ARCH: x64
+      CONDA_PY: 36
+      CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
+
+# We always use a 64-bit machine, but can build x86 distributions
+# with the TARGET_ARCH variable.
+platform:
+  - x64
+
+configuration:
+#  - Debug
+  - Release
+
+# Clone directory.
+clone_folder: c:\projects\TestBoost
+
+# Fetch repository as zip archive.
+shallow_clone: false
+
+# Set the clone depth.
+clone_depth: 1
+
+# Build tags (GitHub only)
+skip_tags: false
+
+branches:
+  except:
+    - gh-pages
+
+init:
+  # Print AppVeyor environment variables
+  - cmd: echo "%APPVEYOR%"
+  - cmd: echo "%CI%"
+  - cmd: echo "%APPVEYOR_API_URL%"
+  - cmd: echo "%APPVEYOR_ACCOUNT_NAME%"
+  - cmd: echo "%APPVEYOR_BUILD_WORKER_IMAGE%"
+  - cmd: echo "%APPVEYOR_PROJECT_ID%"
+  - cmd: echo "%APPVEYOR_PROJECT_NAME%"
+  - cmd: echo "%APPVEYOR_PROJECT_SLUG%"
+  - cmd: echo "%APPVEYOR_BUILD_FOLDER%"
+  - cmd: echo "%APPVEYOR_BUILD_ID%"
+  - cmd: echo "%APPVEYOR_BUILD_NUMBER%"
+  - cmd: echo "%APPVEYOR_BUILD_VERSION%"
+  - cmd: echo "%APPVEYOR_PULL_REQUEST_NUMBER%"
+  - cmd: echo "%APPVEYOR_PULL_REQUEST_TITLE%"
+  - cmd: echo "%APPVEYOR_JOB_ID%"
+  - cmd: echo "%APPVEYOR_REPO_PROVIDER%"
+  - cmd: echo "%APPVEYOR_REPO_SCM%"
+  - cmd: echo "%APPVEYOR_REPO_NAME%"
+  - cmd: echo "%APPVEYOR_REPO_BRANCH%"
+  - cmd: echo "%APPVEYOR_REPO_TAG%"
+  - cmd: echo "%APPVEYOR_REPO_TAG_NAME%"
+  - cmd: echo "%APPVEYOR_REPO_COMMIT%"
+  #- cmd: echo "%APPVEYOR_REPO_COMMIT_AUTHOR%"
+  #- cmd: echo "%APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL%"
+  - cmd: echo "%APPVEYOR_REPO_COMMIT_TIMESTAMP%"
+  - cmd: echo "%APPVEYOR_REPO_COMMIT_MESSAGE%"
+  - cmd: echo "%APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED%"
+  - cmd: echo "%APPVEYOR_SCHEDULED_BUILD%"
+  - cmd: echo "%APPVEYOR_FORCED_BUILD%"
+  - cmd: echo "%APPVEYOR_RE_BUILD%"
+  - cmd: echo "%PLATFORM%"
+  - cmd: echo "%CONFIGURATION%"
+
+install:
+  # Cywing's git breaks conda-build. (see https://github.com/conda-forge/conda-smithy-feedstock/pull/2)
+  - cmd: rmdir C:\cygwin /s /q
+
+  # Add path, activate `conda` and update conda.
+  - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
+  - cmd: conda update --yes --quiet conda
+
+  - cmd: set PYTHONUNBUFFERED=1
+
+  # Add our channels.
+  - cmd: conda config --set show_channel_urls true
+  - cmd: conda config --remove channels defaults
+  - cmd: conda config --add channels defaults
+  - cmd: conda config --add channels conda-forge
+
+  # Configure the VM.
+  - cmd: conda install -n root --quiet --yes cmake boost-cpp
+
+before_build:
+  - cmd: cd C:\projects\TestBoost
+
+  # Download example files
+  # TODO
+  #Powershell.exe -File .travis\download_samples.ps1
+
+  # CMake configure
+  - cmd: if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" set TESTBOOST_CMAKE_GENERATOR=Visual Studio 14 2015
+#  - cmd: if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" "C:\Program Files (x86)\Microsoft Visual Studio\2015\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64
+  - cmd: if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" set TESTBOOST_CMAKE_GENERATOR=Visual Studio 15 2017
+  - cmd: if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64
+  - cmd: if "%PLATFORM%"=="x64" set TESTBOOST_CMAKE_GENERATOR=%TESTBOOST_CMAKE_GENERATOR% Win64
+  - cmd: mkdir build
+  - cmd: cd build
+  - cmd: cmake -G "%TESTBOOST_CMAKE_GENERATOR%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% ".."
+# -DBUILD_SHARED_LIBS=ON
+
+build:
+    project: C:\projects\TestBoost\build\testboost.sln
+    parallel: true
+    # quiet|minimal|normal|detailed
+    verbosity: minimal
