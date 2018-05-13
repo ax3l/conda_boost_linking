@@ -177,7 +177,7 @@ if(BUILD_TESTING)
     enable_testing()
 
     add_test(NAME App.LsFile
-        COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/app app
+        COMMAND app $<TARGET_FILE:app>
         WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     )
 endif()
