@@ -5,31 +5,37 @@ environment:
 #      CONDA_PY: 27
 #      CONDA_INSTALL_LOCN: C:\\Miniconda
 #      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+#      platform: x86
 
 #    - TARGET_ARCH: x64
 #      CONDA_PY: 27
 #      CONDA_INSTALL_LOCN: C:\\Miniconda-x64
 #      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+#      platform: x64
 
     - TARGET_ARCH: x86
       CONDA_PY: 35
       CONDA_INSTALL_LOCN: C:\\Miniconda35
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+#      platform: x86
 
     - TARGET_ARCH: x64
       CONDA_PY: 35
       CONDA_INSTALL_LOCN: C:\\Miniconda35-x64
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+#      platform: x64
 
     - TARGET_ARCH: x86
       CONDA_PY: 36
       CONDA_INSTALL_LOCN: C:\\Miniconda36
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+#      platform: x86
 
     - TARGET_ARCH: x64
       CONDA_PY: 36
       CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+#      platform: x64
 
 # We always use a 64-bit machine, but can build x86 distributions
 # with the TARGET_ARCH variable.
@@ -123,10 +129,11 @@ before_build:
 #  - cmd: if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" "C:\Program Files (x86)\Microsoft Visual Studio\2015\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64
   - cmd: if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" set TESTBOOST_CMAKE_GENERATOR=Visual Studio 15 2017
   - cmd: if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64
-  - cmd: if "%PLATFORM%"=="x64" set TESTBOOST_CMAKE_GENERATOR=%TESTBOOST_CMAKE_GENERATOR% Win64
+  - cmd: if "%TARGET_ARCH%"=="x64" set TESTBOOST_CMAKE_GENERATOR=%TESTBOOST_CMAKE_GENERATOR% Win64
   - cmd: mkdir build
   - cmd: cd build
   - cmd: cmake -G "%TESTBOOST_CMAKE_GENERATOR%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DBUILD_SHARED_LIBS=ON ".."
+# -T v140,host=%TARGET_ARCH%
 
 build:
     project: C:\projects\TestBoost\build\TestBoost.sln
