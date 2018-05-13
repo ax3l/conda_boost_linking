@@ -1,14 +1,15 @@
 environment:
   matrix:
-    - TARGET_ARCH: x86
-      CONDA_PY: 27
-      CONDA_INSTALL_LOCN: C:\\Miniconda
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+# Only VS2008 [vc9] (no C++11) available for Python 2.7
+#    - TARGET_ARCH: x86
+#      CONDA_PY: 27
+#      CONDA_INSTALL_LOCN: C:\\Miniconda
+#      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
 
-    - TARGET_ARCH: x64
-      CONDA_PY: 27
-      CONDA_INSTALL_LOCN: C:\\Miniconda-x64
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+#    - TARGET_ARCH: x64
+#      CONDA_PY: 27
+#      CONDA_INSTALL_LOCN: C:\\Miniconda-x64
+#      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
 
     - TARGET_ARCH: x86
       CONDA_PY: 35
@@ -36,7 +37,7 @@ platform:
   - x64
 
 configuration:
-  - Debug
+#  - Debug
   - Release
 
 # Clone directory.
@@ -88,6 +89,7 @@ init:
   - cmd: echo "%APPVEYOR_FORCED_BUILD%"
   - cmd: echo "%APPVEYOR_RE_BUILD%"
   - cmd: echo "%PLATFORM%"
+  - cmd: echo "%TARGET_ARCH%"
   - cmd: echo "%CONFIGURATION%"
 
 install:
@@ -124,11 +126,13 @@ before_build:
   - cmd: if "%PLATFORM%"=="x64" set TESTBOOST_CMAKE_GENERATOR=%TESTBOOST_CMAKE_GENERATOR% Win64
   - cmd: mkdir build
   - cmd: cd build
-  - cmd: cmake -G "%TESTBOOST_CMAKE_GENERATOR%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% ".."
-# -DBUILD_SHARED_LIBS=ON
+  - cmd: cmake -G "%TESTBOOST_CMAKE_GENERATOR%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DBUILD_SHARED_LIBS=ON ".."
 
 build:
-    project: C:\projects\TestBoost\build\testboost.sln
+    project: C:\projects\TestBoost\build\TestBoost.sln
     parallel: true
     # quiet|minimal|normal|detailed
     verbosity: minimal
+
+after_build:
+  - cmd: cmake --use-stderr --target test
